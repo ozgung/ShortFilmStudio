@@ -1,4 +1,6 @@
+import vertexai
 from google.adk.agents.llm_agent import Agent
+from vertexai.preview.vision_models import ImageGenerationModel
 
 def write_concept(concept: str):
     print(f"write concept: {concept}")
@@ -10,15 +12,39 @@ script_director = Agent(
     instruction='''
     You are the director of a short film in a short film studio. The studio produces a 2 minute short film.
     Writing team finished the first drafts of the script based on the brief from the producer. Your task at this point is to read the script and give comments for revision points if any to the script writer.
+    Be very short and concise. Only provide the comments for things that should be changed.
+    
 
     Title: {title}
     Brief: {brief}
     Synopsis: {synopsis}
     Treatment: {treatment}
+    Script (latest draft): {script}
     ''',
     output_key="comments"
 )
 
+cinematographer = Agent(
+    model='gemini-2.5-flash',
+    name='Cinematographer',
+    description='cinematographer',
+    instruction='''
+
+    You are the cinematographer of a short film in a short film studio. The studio produces a 2 minute short film.
+    Your task is to generate the shooting script, using the given script. Generate and return the list of all shots as a table.
+
+    As the last column of each row, add a promp for Gemini, that will generate an image for realistic storyboard panel.
+
+    For each shot add these coumns:
+    
+    1. Shot Number 2. Image on Screen 3. Camera angle 4. Shot Duration 5. Editing 6. Image Generation Promp for Storyboard
+
+    ---
+    Final Draft of the Script (Screenplay): {script}
+
+    ''',
+    output_key="shooting_script"
+)
 
 director = Agent(
     model='gemini-2.5-flash',

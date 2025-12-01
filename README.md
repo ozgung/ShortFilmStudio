@@ -1,7 +1,7 @@
 ShortFilmStudio
 ================
 
-A tiny Google ADK demo that chains multiple LLM agents (Producer → Director/Script writers) to create preproduction assets for a 2-minute short film.
+A small Google ADK demo that chains multiple LLM agents (Producer → Director/Script writers) to create preproduction assets for a 2-minute short film.
 
 Setup
 -----

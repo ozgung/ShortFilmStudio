@@ -5,51 +5,18 @@ from google.adk.tools.tool_context import ToolContext
 from google.adk.agents.loop_agent import LoopAgent
 from google.adk.agents.sequential_agent import SequentialAgent
 
-from .agent_director import director
+from .agent_director import director, cinematographer
 from .agent_writer import (
     concept_ideation_writer,
-    first_draft_script_writer,
+    script_writer,
     synopsis_writer,
     treatment_writer,
 )
 
-
-
 writing_pipeline  = SequentialAgent(
     name="WritingPipeline",
-    sub_agents=[synopsis_writer, treatment_writer, first_draft_script_writer],
+    sub_agents=[synopsis_writer, treatment_writer, script_writer],
 )
-
-
-# This demonstrates how tools can write to session state using tool_context.
-# The 'user:' prefix indicates this is user-specific data.
-def save_userinfo(
-    tool_context: ToolContext, user_name: str, country: str
-) -> Dict[str, Any]:
-    """
-    Tool to record and save user name and country in session state.
-
-    Args:
-        user_name: The username to store in session state
-        country: The name of the user's country
-    """
-    # Write to session state using the 'user:' prefix for user data
-    tool_context.state["user:name"] = user_name
-    tool_context.state["user:country"] = country
-
-    return {"status": "success"}
-
-
-# This demonstrates how tools can read from session state.
-def retrieve_userinfo(tool_context: ToolContext) -> Dict[str, Any]:
-    """
-    Tool to retrieve user name and country from session state.
-    """
-    # Read from session state
-    user_name = tool_context.state.get("user:name", "Username not found")
-    country = tool_context.state.get("user:country", "Country not found")
-
-    return {"status": "success", "user_name": user_name, "country": country}
 
 # Saves the BRIEF to state
 def save_brief(tool_context: ToolContext, title: str, brief: str
@@ -82,8 +49,12 @@ producer = Agent(
         1.1 Use `concept_ideation_writer` tool to generate 5 film ideas/concepts on the subject, having 4 main characters.
         1.2 CHOOSE one concept from this list and convert that to a Brief for the writing team. Find a title for the film. Save title and brief to session by calling `save_brief` tool.
     2. Pre-Production: 
-        Start the `writing_pipeline` to generate the script.
+        Use the `writing_pipeline` to generate the script.
+    3. Storyboard:
+        Use `cinematographer` tool to call the cinematographer agent to generate shooting script for the movie and storyboard. It will return a shooting_script, as a table of shots.
+
+    Show the generated shooting script to the user.
     ''',
-    sub_agents=[writing_pipeline],
-    tools=[AgentTool(concept_ideation_writer), save_brief, AgentTool(writing_pipeline)]
+    #sub_agents=[writing_pipeline],
+    tools=[AgentTool(concept_ideation_writer), save_brief, AgentTool(writing_pipeline), AgentTool(cinematographer)]
 )

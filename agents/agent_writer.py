@@ -1,4 +1,7 @@
+from typing import Any, Dict
 from google.adk.agents.llm_agent import Agent
+from google.adk.tools.agent_tool import AgentTool
+from google.adk.tools.tool_context import ToolContext
 from .agent_director import script_director
 
 concept_ideation_writer = Agent(
@@ -46,10 +49,33 @@ treatment_writer = Agent(
     output_key="treatment"
 )
 
-first_draft_script_writer = Agent(
+
+# Saves the Script to state
+def update_script(tool_context: ToolContext, script: str
+) -> Dict[str, Any]:
+    """
+    Save or update the script to the session state.
+
+    Args:
+        script: script str in standard markdown format
+    """
+    tool_context.state["script"] = script
+    return {"status": "success"}
+
+# Read script from session state.
+def retrieve_script(tool_context: ToolContext) -> Dict[str, Any]:
+    """
+    Tool to retrieve the most recent saved draft of the script from session state.
+    """
+    # Read from session state
+    script = tool_context.state.get("script", "Script not found")
+
+    return {"status": "success", "script": script}
+
+script_writer = Agent(
     model='gemini-2.5-flash',
-    name='FirstDraftScriptWriter',
-    description='Script Writer, writing the first draft of the script',
+    name='ScriptWriter',
+    description='Script Writer, writing the first draft of the script and revisions.',
     instruction='''
     You are a writer in a short film studio. Given a short film Treatment you write a 2 minute short film iteratively.
 
@@ -60,14 +86,38 @@ first_draft_script_writer = Agent(
     4. Revisions
     5. Final Draft
 
-    You are at the First Draft stage.
+    You start at the First Draft stage.
 
     At this stage you will be provided with a text depicting each of the four main characters in detail. You also have the treatment. Write a first draft script for the 2 minute short film. Add dialogs, actions and scene descriptions.
+
+    Use `update_script` tool save/update your script first draft and revisions.
+    After saving the first draft call `script_director` tool for revision on the latest draft. Just do a single revision iteration. Return the Final draft of the script.
+
+    Use `retrieve_script` tool to load the latest saved draft of the script it needed.
+
+    ---
 
     Title: {title}
     Synopsis: {synopsis}
     Treatment: {treatment}
+    
+    
     ''',
     output_key="script",
-    sub_agents=[script_director]
+    tools=[AgentTool(script_director), update_script, retrieve_script]
 )
+
+# revision_script_writer = Agent(
+#     model='gemini-2.5-flash',
+#     name='RevisionScriptWriter',
+#     description='Script Writer, writing the revision for the script with given comments and revision requests.',
+#     instruction='''
+#     You are a writer in a short film studio. Given a short film Treatment you write a 2 minute short film iteratively.
+
+#     At this stage you will be provided with a text depicting each of the four main characters in detail. You also have the treatment. Write a first draft script for the 2 minute short film. Add dialogs, actions and scene descriptions.
+
+#     Title: {title}
+#     Script: {script}
+#     ''',
+#     output_key='script'
+# )
