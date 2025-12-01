@@ -18,3 +18,15 @@ Notes
 -----
 - Agents live in `agents/` (`agent_producer`, `agent_director`, `agent_writer`) and are wired via `agents/agents_config.py` / `agents/root_agent.yaml`.
 - `.gitignore` keeps `.env`, `.venv`, caches, and IDE files out of version control.
+
+Submission Requirements
+-----------------------
+- Include this README describing the problem, solution, architecture, setup instructions, and diagrams/images where useful.
+
+Diagrams
+--------
+![System Graph 1](images/graph1.png)
+![System Graph 2](images/graph2.png)
+![Shooting Script Flow](images/shooting-script.png)
+![Agent State](images/state.png)
+![Trace View](images/trace.png)
