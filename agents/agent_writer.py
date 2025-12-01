@@ -1,14 +1,57 @@
 from google.adk.agents.llm_agent import Agent
+from .agent_director import script_director
 
-
-writer = Agent(
+concept_ideation_writer = Agent(
     model='gemini-2.5-flash',
-    name='Writer',
-    description='Writer.',
+    name='ConceptWriter',
+    description='Takes the film brief and comes up with Concept ideas.',
     instruction='''
-    You are a writer in a short film studio. Given a short film subject you write a 2 minute short film iteratively.
+    You are a writer in a short film studio making a 2 minute short film.
+    Given the brief/subject/idea/theme of the film as the initial prompt come up with a list of  5 different ONE SENTENCE PITCH around the given subject/theme.
+    Return just the list of the items.
+    ''',
+    output_key="concepts_list"
+)
 
-    You take commands from the director at the different stages of the script development.
+synopsis_writer = Agent(
+    model='gemini-2.5-flash',
+    name='SynopsisWriter',
+    description='Takes the brief and the Concept idea to write a Synopsis.',
+    instruction='''
+    You are a writer in a short film studio making a 2 minute short film. There must be 4 characters in the film.
+    Your task is to write the short synopsis given the brief. Keep it short to a single paragraph. You can get greative when adding details.
+
+    Title: {title}
+    Brief: {brief}
+    ''',
+    output_key="synopsis"
+)
+
+
+treatment_writer = Agent(
+    model='gemini-2.5-flash',
+    name='TreatmentWriter',
+    description='Takes the brief and the Concept idea to write a Treatment.',
+    instruction='''
+    You are a writer in a short film studio making a 2 minute short film.
+
+    Your task is to write a treatment, given the accepted brief and sysnopsis. 
+    
+    Title: {title}
+    Synopsis: {synopsis}
+    
+    Generate a Treatment text for the 2 minute film. 
+    This tratment should have the main story arc. The film must have 4 main characters. EXPLICITLY name these characters to different names if not already named. Write a separate section for Character Profiles depicting all 4 main characters in detail.
+    ''',
+    output_key="treatment"
+)
+
+first_draft_script_writer = Agent(
+    model='gemini-2.5-flash',
+    name='FirstDraftScriptWriter',
+    description='Script Writer, writing the first draft of the script',
+    instruction='''
+    You are a writer in a short film studio. Given a short film Treatment you write a 2 minute short film iteratively.
 
     # The stages of script:
     1. Concept
@@ -17,20 +60,14 @@ writer = Agent(
     4. Revisions
     5. Final Draft
 
-    ## 1. Concept:
-    When asked to generate a Concept, return with a list of 5 different ONE SENTENCE PITCH around the given subject/theme.
+    You are at the First Draft stage.
 
-    ## 2. Treatment:
-    When you are asked to generate a Tratment, given the accepted concept and subject/theme, generate a Treatment text for the 2 minute film. 
-    This tratment should have the main story arc. The film must have 4 main characters. EXPLICITLY name these characters.
+    At this stage you will be provided with a text depicting each of the four main characters in detail. You also have the treatment. Write a first draft script for the 2 minute short film. Add dialogs, actions and scene descriptions.
 
-    ## 3. First Draft:
-    At this stage you will be provided with a text depicting each of the four manin characters in detail. You also have the treatment. Write a fist draft script for the 2 minute short film. Add dialogs, actions and scene descriptions. 
-
-    ## 4. Revisions:
-    When you get revision request, apply the changes to generate a revised draft of the script. You may be tasked with small or big changes.
-
-    ## 5. Final Draft:
-    When asked for the Final Draft, just make minor corrections on the latest revision if needed. Don't change the manin structure.
-    '''
+    Title: {title}
+    Synopsis: {synopsis}
+    Treatment: {treatment}
+    ''',
+    output_key="script",
+    sub_agents=[script_director]
 )

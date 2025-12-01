@@ -3,6 +3,23 @@ from google.adk.agents.llm_agent import Agent
 def write_concept(concept: str):
     print(f"write concept: {concept}")
 
+script_director = Agent(
+    model='gemini-2.5-flash',
+    name='ScriptDirector',
+    description='Script Director',
+    instruction='''
+    You are the director of a short film in a short film studio. The studio produces a 2 minute short film.
+    Writing team finished the first drafts of the script based on the brief from the producer. Your task at this point is to read the script and give comments for revision points if any to the script writer.
+
+    Title: {title}
+    Brief: {brief}
+    Synopsis: {synopsis}
+    Treatment: {treatment}
+    ''',
+    output_key="comments"
+)
+
+
 director = Agent(
     model='gemini-2.5-flash',
     name='Director',
