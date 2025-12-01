@@ -23,7 +23,7 @@ load_dotenv()
 FILM_SUBJECT = "a sci-fi in a spaceship"
 USER_PROMPT = f"Create preproduction assets for a short film about {FILM_SUBJECT}."
 
-APP_NAME = "default"  # Application
+APP_NAME = "agents"  # Application
 USER_ID = "default"  # User
 SESSION = "default"  # Session
 
